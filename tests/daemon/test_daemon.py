@@ -43,9 +43,11 @@ class _FakeClient:
 
     def __init__(self) -> None:
         self.commands: list[MediaCommand] = []
+        self.command_kwargs: list[dict] = []
 
-    async def send_group_command(self, command: MediaCommand) -> None:
+    async def send_group_command(self, command: MediaCommand, **kwargs) -> None:
         self.commands.append(command)
+        self.command_kwargs.append(kwargs)
 
 
 class UndefinedField:
@@ -398,3 +400,49 @@ def test_daemon_start_with_release_audio_on_start_does_not_crash(tmp_path: Path)
                 await task
 
     asyncio.run(run_and_check())
+
+
+def test_control_stop_sends_group_command(tmp_path: Path) -> None:
+    daemon = _make_daemon(tmp_path, settings_volume=25, settings_muted=False)
+    client = _FakeClient()
+    daemon._client = client  # type: ignore[assignment]
+
+    async def run() -> None:
+        await daemon._apply_control_command("stop", {"command": "stop"})
+
+    asyncio.run(run())
+
+    assert client.commands == [MediaCommand.STOP]
+
+
+def test_control_mute_unmute_toggle_mute(tmp_path: Path) -> None:
+    daemon = _make_daemon(tmp_path, settings_volume=25, settings_muted=False)
+    daemon._audio_handler = _FakeAudioHandler(volume=25, muted=False)
+    client = _FakeClient()
+    daemon._client = client  # type: ignore[assignment]
+
+    async def run() -> None:
+        # Test mute command
+        await daemon._apply_control_command("mute", {"command": "mute"})
+        assert daemon._audio_handler.muted is True
+        assert client.commands[-1] == MediaCommand.MUTE
+        assert client.command_kwargs[-1] == {"mute": True}
+
+        # Test unmute command
+        await daemon._apply_control_command("unmute", {"command": "unmute"})
+        assert daemon._audio_handler.muted is False
+        assert client.commands[-1] == MediaCommand.MUTE
+        assert client.command_kwargs[-1] == {"mute": False}
+
+        # Test toggle_mute command
+        await daemon._apply_control_command("toggle_mute", {"command": "toggle_mute"})
+        assert daemon._audio_handler.muted is True
+        assert client.commands[-1] == MediaCommand.MUTE
+        assert client.command_kwargs[-1] == {"mute": True}
+
+        await daemon._apply_control_command("toggle_mute", {"command": "toggle_mute"})
+        assert daemon._audio_handler.muted is False
+        assert client.commands[-1] == MediaCommand.MUTE
+        assert client.command_kwargs[-1] == {"mute": False}
+
+    asyncio.run(run())

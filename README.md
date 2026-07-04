@@ -106,10 +106,14 @@ Accepts a JSON payload to securely send playback and volume commands to the acti
 
 - `{"command": "play"}`
 - `{"command": "pause"}`
+- `{"command": "stop"}`
 - `{"command": "toggle_play_pause"}`
 - `{"command": "next"}`
 - `{"command": "previous"}`
 - `{"command": "set_volume", "volume": 50, "muted": false}` (0-100)
+- `{"command": "mute"}`
+- `{"command": "unmute"}`
+- `{"command": "toggle_mute"}`
 - `{"command": "set_delay", "delay_ms": 50}` (0-5000)
 - `{"command": "release_audio"}` closes the local audio stream and drops incoming chunks so another process can use the device
 - `{"command": "acquire_audio"}` resumes local audio output on the configured device

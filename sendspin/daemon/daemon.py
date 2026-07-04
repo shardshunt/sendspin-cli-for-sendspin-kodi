@@ -263,6 +263,8 @@ class SendspinDaemon:
                 await self._send_media_command(MediaCommand.PLAY)
             case "pause":
                 await self._send_media_command(MediaCommand.PAUSE)
+            case "stop":
+                await self._send_media_command(MediaCommand.STOP)
             case "toggle_play_pause":
                 media_command = (
                     MediaCommand.PAUSE
@@ -276,6 +278,13 @@ class SendspinDaemon:
                 await self._send_media_command(MediaCommand.PREVIOUS)
             case "set_volume":
                 self._set_control_volume(payload)
+            case "mute":
+                await self._set_control_mute(True)
+            case "unmute":
+                await self._set_control_mute(False)
+            case "toggle_mute":
+                muted = not self._audio_handler.muted if self._audio_handler else False
+                await self._set_control_mute(muted)
             case "set_delay":
                 self._set_control_delay(payload)
             case "release_audio":
@@ -335,11 +344,11 @@ class SendspinDaemon:
         self._static_delay_ms = self._client.static_delay_ms
         self._settings.update(static_delay_ms=self._static_delay_ms)
 
-    async def _send_media_command(self, command: MediaCommand) -> None:
+    async def _send_media_command(self, command: MediaCommand, **kwargs) -> None:
         """Send a group media command to the connected Sendspin server."""
         if self._client is None or not self._client.connected:
             raise RuntimeError("No connected Sendspin server")
-        await self._client.send_group_command(command)
+        await self._client.send_group_command(command, **kwargs)
 
     def _set_control_volume(self, payload: dict[str, Any]) -> None:
         """Apply a local player volume command from the control API."""
@@ -354,6 +363,15 @@ class SendspinDaemon:
 
         muted = bool(payload.get("muted", False))
         self._audio_handler.set_volume(raw_volume, muted=muted)
+
+    async def _set_control_mute(self, muted: bool) -> None:
+        """Apply a local player mute command from the control API."""
+        if self._audio_handler is None:
+            raise RuntimeError("Audio handler is not initialized")
+
+        self._audio_handler.set_volume(self._audio_handler.volume, muted=muted)
+        with contextlib.suppress(Exception):
+            await self._send_media_command(MediaCommand.MUTE, mute=muted)
 
     async def _handle_state_request(self, _request: web.Request) -> web.Response:
         """Return the daemon state expected by the Kodi add-on."""
