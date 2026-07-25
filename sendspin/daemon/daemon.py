@@ -788,7 +788,7 @@ class SendspinDaemon:
         if event == "start":
             logger.debug("[ControlAPI] Hardware audio started. Forcing PLAYING state.")
             self._playback_state = PlaybackStateType.PLAYING
-            self._control_playback["speed"] = 1.0
+            self._control_playback["speed"] = 1000
             if "position" in self._control_playback:
                 # Re-anchor the system timer so extrapolation resumes seamlessly from current position
                 self._control_metadata_updated_at = time.monotonic()
@@ -798,10 +798,10 @@ class SendspinDaemon:
             self._playback_state = PlaybackStateType.PAUSED
             
             # If we were previously playing, snapshot the exact position where it stopped
-            current_speed = self._control_playback.get("speed", 1.0)
+            current_speed = self._control_playback.get("speed", 1000)
             if current_speed > 0 and "position" in self._control_playback and self._control_metadata_updated_at is not None:
                 elapsed = time.monotonic() - self._control_metadata_updated_at
-                self._control_playback["position"] += elapsed * current_speed
+                self._control_playback["position"] += elapsed * (current_speed / 1000.0)
                 
                 if "duration" in self._control_playback:
                     self._control_playback["position"] = min(

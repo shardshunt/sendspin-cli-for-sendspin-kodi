@@ -85,7 +85,7 @@ Response Example:
   "playback": {
     "position": 42.105,
     "duration": 185.0,
-    "speed": 1.0
+    "speed": 1000
   },
   "volume": {
     "volume": 75,
