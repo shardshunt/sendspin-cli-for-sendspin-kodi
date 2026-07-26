@@ -30,7 +30,7 @@ FULL_IMAGE="${IMAGE_NAME}:${TAG}"
 
 echo "=========================================================="
 echo "Preparing multi-platform build for: ${FULL_IMAGE}"
-echo "Platforms: linux/amd64, linux/arm64, linux/arm/v7, linux/386"
+echo "Platforms: linux/amd64, linux/arm64, linux/arm/v7"
 echo "=========================================================="
 
 # 1. Register emulation support on the host kernel
@@ -52,7 +52,7 @@ docker buildx inspect --bootstrap
 
 # 3. Execute the build
 BUILD_ARGS=(
-    --platform linux/amd64,linux/arm64,linux/arm/v7,linux/386
+    --platform linux/amd64,linux/arm64,linux/arm/v7
     -t "$FULL_IMAGE"
     .
 )
