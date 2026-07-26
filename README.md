@@ -529,6 +529,20 @@ To build the image locally for your host system's architecture (e.g., `linux/amd
 docker build -t ghcr.io/shardshunt/sendspin-cli-for-sendspin-kodi:latest .
 ```
 
+### Fast Local Build & Direct Deployment to LibreELEC via SSH
+To quickly build the container image locally and deploy it directly over SSH to a target LibreELEC machine without uploading to a registry or running slow multi-arch emulators:
+
+```bash
+./scripts/deploy-libreelec.sh <LIBREELEC_IP_OR_HOSTNAME> [TAG]
+```
+
+**Example:**
+```bash
+./scripts/deploy-libreelec.sh 192.168.0.110 2026.7.0
+```
+
+This script builds the single-arch container image natively on your workstation and streams it via `docker save | ssh root@<IP> docker load` directly into the remote LibreELEC Docker daemon in seconds.
+
 ### Local Multi-Platform Build (Cross-Compiling for ARM & 32-bit x86)
 To support running the container on ARM-based devices like the Odroid N2 (ARMv8 / `linux/arm64`) or Raspberry Pi (ARMv7 / `linux/arm/v7`), and older 32-bit Intel/AMD PCs (`linux/386`), a helper script [scripts/build-docker.sh](file:///var/home/shards/Shards-Sync/Work/Codes/kodi-sendspin/sendspin-cli-for-sendspin-kodi/scripts/build-docker.sh) is provided to register emulator support, initialize a dedicated `sendspin-builder` Buildx builder, and run the multi-architecture compile. Physical target hardware is not required to perform this build.
 
