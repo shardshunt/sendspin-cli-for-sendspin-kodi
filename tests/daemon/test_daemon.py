@@ -195,6 +195,19 @@ def test_control_state_skips_undefined_metadata_fields(tmp_path: Path) -> None:
     assert state["playback"]["position"] == pytest.approx(12.5, abs=1e-3)
 
 
+def test_control_state_reports_server_connection(tmp_path: Path) -> None:
+    daemon = _make_daemon(tmp_path, settings_volume=25, settings_muted=False)
+    daemon._audio_handler = _FakeAudioHandler(volume=25, muted=False)
+
+    assert daemon._get_control_state()["connection"] == {"connected": False}
+
+    daemon._client = SimpleNamespace(connected=True, static_delay_ms=0.0)  # type: ignore[assignment]
+    assert daemon._get_control_state()["connection"] == {"connected": True}
+
+    daemon._client.connected = False
+    assert daemon._get_control_state()["connection"] == {"connected": False}
+
+
 def test_audio_event_start_and_stop_extrapolation_speed(tmp_path: Path) -> None:
     daemon = _make_daemon(tmp_path, settings_volume=25, settings_muted=False)
     daemon._control_playback = {"position": 10.0, "speed": 1000}

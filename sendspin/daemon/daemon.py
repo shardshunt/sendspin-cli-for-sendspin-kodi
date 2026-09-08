@@ -447,6 +447,9 @@ class SendspinDaemon:
             "playback": playback,
             "volume": volume,
             "delay_ms": delay_ms,
+            "connection": {
+                "connected": bool(self._client is not None and getattr(self._client, "connected", False)),
+            },
             "audio": self._get_audio_status(),
         }
 

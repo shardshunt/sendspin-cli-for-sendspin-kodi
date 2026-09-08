@@ -70,7 +70,7 @@ sendspin daemon --control-api true --control-host 127.0.0.1 --control-port 59999
 Security Warning: This API is unauthenticated. Ensure you only bind it to trusted local loopback interfaces (e.g., 127.0.0.1) to prevent unauthorized network access.
 
 ### `GET /state`
-Returns the current real-time playback state, track metadata, and hardware volume. The track position uses hardware hooks and extrapolation to maintain millisecond accuracy dynamically between server payload frames.
+Returns the current real-time playback state, track metadata, and hardware volume. The track position uses hardware hooks and extrapolation to maintain millisecond accuracy dynamically between server payload frames. The response also includes `connection.connected`, which reports whether the daemon currently has an active Sendspin server connection. This is independent of local audio release and playback state.
 
 Response Example:
 
@@ -92,6 +92,9 @@ Response Example:
     "muted": false
   },
   "delay_ms": 50.0,
+  "connection": {
+    "connected": true
+  },
   "audio": {
     "released": false,
     "stream_active": true
